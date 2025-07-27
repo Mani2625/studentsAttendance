@@ -9,7 +9,7 @@ function StudentsCard(props) {
 
         async function fetchStatus() {
             try {
-                const res = await fetch(`http://localhost:5000/api/attendance/status?student_reg_no=${props.reg_no}&date=${props.selectedDate}`);
+                const res = await fetch(`api/attendance/status?student_reg_no=${props.reg_no}&date=${props.selectedDate}`);
                 const data = await res.json();
                 setMarkedStatus(data.status); // status from DB
             } catch (error) {
@@ -28,7 +28,7 @@ function StudentsCard(props) {
 
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:5000/api/attendance', {
+            const response = await fetch('api/attendance', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
