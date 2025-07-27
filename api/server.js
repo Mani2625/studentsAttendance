@@ -1,23 +1,28 @@
 import cors from 'cors';
+import dotenv from 'dotenv';
 import express from 'express';
 import mysql from 'mysql2';
+dotenv.config();
+
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// DB config
 const db = mysql.createConnection({
-    host:     'b4ozvvutfyl9t3hag2y8-mysql.services.clever-cloud.com',
-    user:     'urul8dh9kv1rbpsg',
-    password: 'xxGTXWHfaSblpgmGurcN',
-    database: 'b4ozvvutfyl9t3hag2y8',
-    port:     3306,
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT,
     ssl: { rejectUnauthorized: false }
 });
 
+
+
+
 // Get all students
-app.get('/api/students', (req, res) => {
+app.get('api/students', (req, res) => {
     db.query('SELECT * FROM students_table', (err, results) => {
         if (err) {
             console.error('Error fetching students:', err);
@@ -28,7 +33,7 @@ app.get('/api/students', (req, res) => {
 });
 
 // Mark attendance
-app.post('/api/attendance', (req, res) => {
+app.post('api/attendance', (req, res) => {
     const { student_reg_no, attendance_date, status } = req.body;
     if (!student_reg_no || !attendance_date || !status) {
         return res.status(400).json({ error: 'Missing required fields' });
@@ -49,7 +54,7 @@ app.post('/api/attendance', (req, res) => {
 });
 
 // Attendance summary for a date
-app.get('/api/attendance/summary', (req, res) => {
+app.get('api/attendance/summary', (req, res) => {
     const { date } = req.query;
     if (!date) return res.status(400).json({ error: 'Date query parameter is required' });
 
@@ -69,7 +74,7 @@ app.get('/api/attendance/summary', (req, res) => {
 });
 
 // Get attendance status of *all* students for a date (for filter)
-app.get('/api/attendance/status', (req, res) => {
+app.get('api/attendance/status', (req, res) => {
     const { student_reg_no, date } = req.query;
 
     if (!student_reg_no || !date) {
@@ -118,9 +123,10 @@ app.get('/', (req, res) => {
 });
 
 // Start server
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
 
 
@@ -132,7 +138,7 @@ app.get('/api/attendance/present', (req, res) => {
     }
 
     const query = `
-        SELECT s.* 
+        SELECT s.*
         FROM students_table s
         JOIN attendance a ON s.reg_no = a.student_reg_no
         WHERE a.attendance_date = ? AND a.status = 'Present'
