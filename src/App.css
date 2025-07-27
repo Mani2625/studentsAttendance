@@ -66,20 +66,33 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   flex:1;
 }
 
+b/* Default button style */
+button {
+  padding: 8px 12px;
+  margin: 5px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+/* When DB says student is Present */
 button.marked.present {
   background-color: #4CAF50; /* green */
   color: white;
 }
 
+/* When DB says student is Absent */
 button.marked.absent {
   background-color: #f44336; /* red */
   color: white;
 }
 
+/* Loading effect */
 button.loading {
   opacity: 0.6;
   cursor: not-allowed;
 }
+
 
 #summary{
   justify-self: center;
@@ -161,4 +174,16 @@ button.loading {
 input{
   border-radius: 10px;
   height:40px;
+}
+
+
+.filter-active {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+button:hover {
+    background: #0051ff;
 }
