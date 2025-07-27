@@ -1,7 +1,7 @@
 import './App.css';
 import StudentsList from './StudentsList.jsx';
-import NavBar from './NavBar';
-import AddStudent from './AddStudent';
+import NavBar from './NavBar.jsx';
+import AddStudent from './AddStudent.jsx';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 function App() {
