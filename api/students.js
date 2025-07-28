@@ -1,38 +1,36 @@
 import mysql from 'mysql2/promise';
 
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT,
-  ssl: { rejectUnauthorized: false }
-});
-
 export default async function handler(req, res) {
-  const { method, body } = req;
+  const connection = await mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT,
+    ssl: { rejectUnauthorized: false }
+  });
 
   try {
-    if (method === 'GET') {
-      const [rows] = await pool.query('SELECT * FROM students_table');
-      return res.status(200).json(rows);
-    }
+    const { date } = req.query;
 
-    if (method === 'POST') {
-      const { reg_no, name, hostel, room_no, sra } = body;
-      if (!reg_no || !name || !hostel || !room_no || !sra) {
-        return res.status(400).json({ error: 'Missing required fields' });
-      }
-      await pool.query(
-        'INSERT INTO students_table (reg_no, name, hostel, room_no, sra) VALUES (?, ?, ?, ?, ?)',
-        [reg_no, name, hostel, room_no, sra]
-      );
-      return res.status(200).json({ success: true, message: `Student ${name} added!` });
+    // If date provided, join with attendance table
+    if (date) {
+      const [rows] = await connection.query(`
+        SELECT s.*, a.status
+        FROM students_table s
+        LEFT JOIN attendance a
+          ON s.reg_no = a.student_reg_no AND a.attendance_date = ?
+      `, [date]);
+      res.status(200).json(rows);
+    } else {
+      // Default: just students
+      const [rows] = await connection.query('SELECT * FROM students_table');
+      res.status(200).json(rows);
     }
-
-    return res.status(405).json({ error: 'Method not allowed' });
-  } catch (error) {
-    console.error('DB error:', error);
-    return res.status(500).json({ error: 'Database error' });
+  } catch (err) {
+    console.error('Error fetching students:', err);
+    res.status(500).json({ error: 'Database error' });
+  } finally {
+    await connection.end();
   }
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import StudentsCard from './StudentsCard';
 import AttendanceSummary from './AttendanceSummary';
+import StudentsCard from './StudentsCard';
 
 function StudentsList() {
     const [students, setStudents] = useState([]);
@@ -20,7 +20,8 @@ function StudentsList() {
         } else if (activeFilter === 'Absent') {
             url = `/api/attendance?type=absent&date=${selectedDate}`;
         } else {
-            url = '/api/students';
+            url = `/api/students?date=${selectedDate}`;
+
         }
 
         fetch(url)

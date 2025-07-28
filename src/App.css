@@ -187,3 +187,14 @@ input{
 button:hover {
     background: #0051ff;
 }
+button.marked {
+  color: white;
+}
+
+button.Present.marked {
+  background-color: #4CAF50; /* green */
+}
+
+button.Absent.marked {
+  background-color: #F44336; /* red */
+}

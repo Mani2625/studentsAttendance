@@ -47,3 +47,5 @@ folder-structure.txt
 
 # ESLint config
 eslint.config.js
+
+.vercel
