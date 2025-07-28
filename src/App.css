@@ -187,27 +187,3 @@ input{
 button:hover {
     background: #0051ff;
 }
-
-
-
-
-
-.filter-active {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-}
-
-button {
-  padding: 6px 12px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  background: #f8f8f8;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #e0e0e0;
-}
