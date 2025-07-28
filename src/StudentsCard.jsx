@@ -1,8 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
 
 function StudentsCard(props) {
   const [markedStatus, setMarkedStatus] = useState(props.initialStatus);  // initialStatus from DB
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setMarkedStatus(props.initialStatus);
+  }, [props.initialStatus]);
 
   const markAttendance = async (status) => {
     if (!props.selectedDate) {
@@ -36,28 +41,34 @@ function StudentsCard(props) {
       setLoading(false);
     }
   };
+  console.log('markedStatus:', markedStatus);
+
 
   return (
     <div className="student-card">
-      <p>Name: {props.name}</p>
-      <p>Reg NO: {props.reg_no}</p>
-      <p>Hostel: {props.hostel}</p>
-      <p>Room No: {props.room_no}</p>
-      <p>SRA: {props.sra}</p>
-      <button
-        className={`Present ${markedStatus === 'Present' ? 'marked' : ''}`}
-        disabled={loading}
-        onClick={() => markAttendance('Present')}
-      >
-        Present
-      </button>
-      <button
-        className={`Absent ${markedStatus === 'Absent' ? 'marked' : ''}`}
-        disabled={loading}
-        onClick={() => markAttendance('Absent')}
-      >
-        Absent
-      </button>
+      <div className="student-details">
+        <p><span>Name:</span> {props.name}</p>
+        <p><span>Reg NO:</span> {props.reg_no}</p>
+        <p><span>Hostel:</span> {props.hostel}</p>
+        <p><span>Room No:</span> {props.room_no}</p>
+        <p><span>SRA:</span> {props.sra}</p>
+      </div>
+      <div className="attendance-actions">
+        <button
+          className={`Present ${markedStatus === 'Present' ? 'marked' : ''}`}
+          disabled={loading}
+          onClick={() => markAttendance('Present')}
+        >
+          Present
+        </button>
+        <button
+          className={`Absent ${markedStatus === 'Absent' ? 'marked' : ''}`}
+          disabled={loading}
+          onClick={() => markAttendance('Absent')}
+        >
+          Absent
+        </button>
+      </div>
     </div>
   );
 }

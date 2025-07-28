@@ -92,6 +92,7 @@ function StudentsList() {
                             room_no={student.room_no}
                             sra={student.sra}
                             selectedDate={selectedDate}
+                            initialStatus={student.status}
                         />
                     ))
                 )}
