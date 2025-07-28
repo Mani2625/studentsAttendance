@@ -174,8 +174,8 @@ button.marked.absent {
   display: flex;
   gap: 20px;
   margin: 0;
-  padding: 0;
-  
+  padding: 0; 
+  justify-content: center;
 }
 
 .navbar li {
@@ -196,6 +196,14 @@ button.marked.absent {
   background-color: rgb(83, 78, 78);
   padding: 10px;
   border-radius: 8px;
+}
+
+/* Responsive Navbar for mobile */
+@media (max-width: 768px) {
+  .navbar ul {
+    flex-direction: column;
+    align-items: center;
+  }
 }
 
 
