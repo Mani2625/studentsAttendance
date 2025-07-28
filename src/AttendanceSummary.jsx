@@ -12,7 +12,7 @@ function AttendanceSummary({ selectedDate }) {
         setLoading(true);
         setError(null);
 
-        fetch(`api/attendance/summary?date=${selectedDate}`)
+        fetch(`/api/attendance/summary?date=${selectedDate}`)
             .then(response => response.json())
             .then(data => {
                 setSummary(data);

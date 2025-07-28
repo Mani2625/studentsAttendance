@@ -1,40 +1,48 @@
-// routes/students.js
-import express from 'express';
+import dotenv from 'dotenv';
+import mysql from 'mysql2/promise';
 
-const router = express.Router();
+dotenv.config();
 
-export default (db) => {
+const dbConfig = {
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
+  ssl: { rejectUnauthorized: false }
+};
 
-  // Get all students
-  router.get('/', (req, res) => {
-    db.query('SELECT * FROM students_table', (err, results) => {
-      if (err) {
-        console.error('Error fetching students:', err);
-        return res.status(500).json({ error: 'Database error' });
-      }
-      res.json(results);
-    });
-  });
+export default async function handler(req, res) {
+  const db = await mysql.createConnection(dbConfig);
 
-  // Add new student
-  router.post('/', (req, res) => {
+  if (req.method === 'GET') {
+    try {
+      const [rows] = await db.query('SELECT * FROM students_table');
+      res.status(200).json(rows);
+    } catch (err) {
+      console.error('Error fetching students:', err);
+      res.status(500).json({ error: 'Database error' });
+    }
+  } else if (req.method === 'POST') {
     const { reg_no, name, hostel, room_no, sra } = req.body;
+
     if (!reg_no || !name || !hostel || !room_no || !sra) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const query = `
-      INSERT INTO students_table (reg_no, name, hostel, room_no, sra)
-      VALUES (?, ?, ?, ?, ?)
-    `;
-    db.query(query, [reg_no, name, hostel, room_no, sra], (err) => {
-      if (err) {
-        console.error('Error adding student:', err);
-        return res.status(500).json({ error: 'Database error' });
-      }
-      res.json({ success: true, message: `Student ${name} added!` });
-    });
-  });
+    try {
+      await db.query(
+        'INSERT INTO students_table (reg_no, name, hostel, room_no, sra) VALUES (?, ?, ?, ?, ?)',
+        [reg_no, name, hostel, room_no, sra]
+      );
+      res.status(200).json({ success: true, message: `Student ${name} added!` });
+    } catch (err) {
+      console.error('Error adding student:', err);
+      res.status(500).json({ error: 'Database error' });
+    }
+  } else {
+    res.status(405).json({ error: 'Method not allowed' });
+  }
 
-  return router;
-};
+  await db.end();
+}

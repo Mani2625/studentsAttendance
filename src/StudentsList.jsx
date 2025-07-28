@@ -16,11 +16,11 @@ function StudentsList() {
         let url = '';
 
         if (activeFilter === 'Present') {
-            url = `api/attendance/present?date=${selectedDate}`;
+            url = `/api/attendance?type=present&date=${selectedDate}`;
         } else if (activeFilter === 'Absent') {
-            url = `api/attendance/absent?date=${selectedDate}`;
+            url = `/api/attendance?type=absent&date=${selectedDate}`;
         } else {
-            url = 'api/students';
+            url = '/api/students';
         }
 
         fetch(url)

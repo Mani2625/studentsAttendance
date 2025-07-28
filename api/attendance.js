@@ -1,114 +1,99 @@
-// routes/attendance.js
-import express from 'express';
+import dotenv from 'dotenv';
+import mysql from 'mysql2/promise';
 
-const router = express.Router();
+dotenv.config();
 
-export default (db) => {
+const dbConfig = {
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
+  ssl: { rejectUnauthorized: false }
+};
 
-  // Mark attendance
-  router.post('/', (req, res) => {
+export default async function handler(req, res) {
+  const db = await mysql.createConnection(dbConfig);
+
+  if (req.method === 'POST') {
     const { student_reg_no, attendance_date, status } = req.body;
     if (!student_reg_no || !attendance_date || !status) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const query = `
-      INSERT INTO attendance (student_reg_no, attendance_date, status)
-      VALUES (?, ?, ?)
-      ON DUPLICATE KEY UPDATE status = ?
-    `;
-    const values = [student_reg_no, attendance_date, status, status];
-
-    db.query(query, values, (err) => {
-      if (err) {
-        console.error('Error marking attendance:', err);
-        return res.status(500).json({ error: 'Database error' });
-      }
-      res.json({ success: true, message: `Attendance marked for ${student_reg_no}` });
-    });
-  });
-
-  // Attendance summary
-  router.get('/summary', (req, res) => {
-    const { date } = req.query;
-    if (!date) return res.status(400).json({ error: 'Date query parameter is required' });
-
-    const summaryQuery = `
-      SELECT
-        (SELECT COUNT(*) FROM students_table) as total,
-        (SELECT COUNT(*) FROM attendance WHERE attendance_date = ? AND status = 'Present') as present,
-        (SELECT COUNT(*) FROM attendance WHERE attendance_date = ? AND status = 'Absent') as absent
-    `;
-    db.query(summaryQuery, [date, date], (err, results) => {
-      if (err) {
-        console.error('Error fetching attendance summary:', err);
-        return res.status(500).json({ error: 'Database error' });
-      }
-      res.json(results[0] || { total: 0, present: 0, absent: 0 });
-    });
-  });
-
-  // Status for specific student and date
-  router.get('/status', (req, res) => {
-    const { student_reg_no, date } = req.query;
-    if (!student_reg_no || !date) {
-      return res.status(400).json({ error: 'Missing student_reg_no or date' });
+    try {
+      await db.query(
+        `INSERT INTO attendance (student_reg_no, attendance_date, status)
+         VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE status = ?`,
+        [student_reg_no, attendance_date, status, status]
+      );
+      res.status(200).json({ success: true, message: `Attendance marked for ${student_reg_no}` });
+    } catch (err) {
+      console.error('Error marking attendance:', err);
+      res.status(500).json({ error: 'Database error' });
     }
 
-    const query = `SELECT status FROM attendance WHERE student_reg_no = ? AND attendance_date = ?`;
-    db.query(query, [student_reg_no, date], (err, results) => {
-      if (err) {
-        console.error('Error fetching attendance status:', err);
-        return res.status(500).json({ error: 'Database error' });
+  } else if (req.method === 'GET') {
+    const { date, student_reg_no, type } = req.query;
+
+    if (type === 'summary' && date) {
+      try {
+        const [rows] = await db.query(`
+          SELECT
+            (SELECT COUNT(*) FROM students_table) as total,
+            (SELECT COUNT(*) FROM attendance WHERE attendance_date = ? AND status = 'Present') as present,
+            (SELECT COUNT(*) FROM attendance WHERE attendance_date = ? AND status = 'Absent') as absent
+        `, [date, date]);
+        res.status(200).json(rows[0]);
+      } catch (err) {
+        console.error('Error fetching summary:', err);
+        res.status(500).json({ error: 'Database error' });
       }
-
-      if (results.length > 0) {
-        res.json({ status: results[0].status });
-      } else {
-        res.json({ status: null });
+    } else if (type === 'status' && date && student_reg_no) {
+      try {
+        const [rows] = await db.query(
+          'SELECT status FROM attendance WHERE student_reg_no = ? AND attendance_date = ?',
+          [student_reg_no, date]
+        );
+        res.status(200).json({ status: rows.length > 0 ? rows[0].status : null });
+      } catch (err) {
+        console.error('Error fetching status:', err);
+        res.status(500).json({ error: 'Database error' });
       }
-    });
-  });
-
-  // List of students marked Present
-  router.get('/present', (req, res) => {
-    const { date } = req.query;
-    if (!date) return res.status(400).json({ error: 'Missing date parameter' });
-
-    const query = `
-      SELECT s.* 
-      FROM students_table s
-      JOIN attendance a ON s.reg_no = a.student_reg_no
-      WHERE a.attendance_date = ? AND a.status = 'Present'
-    `;
-    db.query(query, [date], (err, results) => {
-      if (err) {
-        console.error('Error fetching present students:', err);
-        return res.status(500).json({ error: 'Database error' });
+    } else if (type === 'present' && date) {
+      try {
+        const [rows] = await db.query(`
+          SELECT s.* 
+          FROM students_table s
+          JOIN attendance a ON s.reg_no = a.student_reg_no
+          WHERE a.attendance_date = ? AND a.status = 'Present'
+        `, [date]);
+        res.status(200).json(rows);
+      } catch (err) {
+        console.error('Error fetching present:', err);
+        res.status(500).json({ error: 'Database error' });
       }
-      res.json(results);
-    });
-  });
-
-  // List of students marked Absent
-  router.get('/absent', (req, res) => {
-    const { date } = req.query;
-    if (!date) return res.status(400).json({ error: 'Missing date parameter' });
-
-    const query = `
-      SELECT s.* 
-      FROM students_table s
-      JOIN attendance a ON s.reg_no = a.student_reg_no
-      WHERE a.attendance_date = ? AND a.status = 'Absent'
-    `;
-    db.query(query, [date], (err, results) => {
-      if (err) {
-        console.error('Error fetching absent students:', err);
-        return res.status(500).json({ error: 'Database error' });
+    } else if (type === 'absent' && date) {
+      try {
+        const [rows] = await db.query(`
+          SELECT s.* 
+          FROM students_table s
+          JOIN attendance a ON s.reg_no = a.student_reg_no
+          WHERE a.attendance_date = ? AND a.status = 'Absent'
+        `, [date]);
+        res.status(200).json(rows);
+      } catch (err) {
+        console.error('Error fetching absent:', err);
+        res.status(500).json({ error: 'Database error' });
       }
-      res.json(results);
-    });
-  });
+    } else {
+      res.status(400).json({ error: 'Invalid or missing parameters' });
+    }
 
-  return router;
-};
+  } else {
+    res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  await db.end();
+}

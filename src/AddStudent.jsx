@@ -19,7 +19,7 @@ function AddStudent() {
         e.preventDefault();
 
         try {
-            const response = await fetch('api/students', {
+            const response = await fetch('/api/students', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)

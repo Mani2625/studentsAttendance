@@ -1,28 +1,23 @@
 import cors from 'cors';
-import dotenv from 'dotenv';
 import express from 'express';
 import mysql from 'mysql2';
-dotenv.config();
-
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+// DB config
 const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT,
+    host:     'b4ozvvutfyl9t3hag2y8-mysql.services.clever-cloud.com',
+    user:     'urul8dh9kv1rbpsg',
+    password: 'xxGTXWHfaSblpgmGurcN',
+    database: 'b4ozvvutfyl9t3hag2y8',
+    port:     3306,
     ssl: { rejectUnauthorized: false }
 });
 
-
-
-
 // Get all students
-app.get('api/students', (req, res) => {
+app.get('/api/students', (req, res) => {
     db.query('SELECT * FROM students_table', (err, results) => {
         if (err) {
             console.error('Error fetching students:', err);
@@ -33,7 +28,7 @@ app.get('api/students', (req, res) => {
 });
 
 // Mark attendance
-app.post('api/attendance', (req, res) => {
+app.post('/api/attendance', (req, res) => {
     const { student_reg_no, attendance_date, status } = req.body;
     if (!student_reg_no || !attendance_date || !status) {
         return res.status(400).json({ error: 'Missing required fields' });
@@ -54,7 +49,7 @@ app.post('api/attendance', (req, res) => {
 });
 
 // Attendance summary for a date
-app.get('api/attendance/summary', (req, res) => {
+app.get('/api/attendance/summary', (req, res) => {
     const { date } = req.query;
     if (!date) return res.status(400).json({ error: 'Date query parameter is required' });
 
@@ -74,29 +69,19 @@ app.get('api/attendance/summary', (req, res) => {
 });
 
 // Get attendance status of *all* students for a date (for filter)
-app.get('api/attendance/status', (req, res) => {
-    const { student_reg_no, date } = req.query;
+app.get('/api/attendance/status', (req, res) => {
+    const { date } = req.query;
+    if (!date) return res.status(400).json({ error: 'Date required' });
 
-    if (!student_reg_no || !date) {
-        return res.status(400).json({ error: 'Missing student_reg_no or date' });
-    }
-
-    const query = `SELECT status FROM attendance WHERE student_reg_no = ? AND attendance_date = ?`;
-
-    db.query(query, [student_reg_no, date], (err, results) => {
+    const query = `SELECT student_reg_no, status FROM attendance WHERE attendance_date = ?`;
+    db.query(query, [date], (err, results) => {
         if (err) {
             console.error('Error fetching attendance status:', err);
             return res.status(500).json({ error: 'Database error' });
         }
-
-        if (results.length > 0) {
-            res.json({ status: results[0].status });
-        } else {
-            res.json({ status: null });
-        }
+        res.json(results);
     });
 });
-
 
 // Add new student
 app.post('/api/students', (req, res) => {
@@ -123,35 +108,11 @@ app.get('/', (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
-
+const PORT = 5000;
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
 });
 
-
-// Get list of students marked 'Present' on a specific date
-app.get('/api/attendance/present', (req, res) => {
-    const { date } = req.query;
-    if (!date) {
-        return res.status(400).json({ error: 'Missing date parameter' });
-    }
-
-    const query = `
-        SELECT s.*
-        FROM students_table s
-        JOIN attendance a ON s.reg_no = a.student_reg_no
-        WHERE a.attendance_date = ? AND a.status = 'Present'
-    `;
-
-    db.query(query, [date], (err, results) => {
-        if (err) {
-            console.error('Error fetching present students:', err);
-            return res.status(500).json({ error: 'Database error' });
-        }
-        res.json(results);
-    });
-});
 
 app.get('/api/attendance/absent', (req, res) => {
     const { date } = req.query;
@@ -171,3 +132,27 @@ app.get('/api/attendance/absent', (req, res) => {
         res.json(results);
     });
 });
+
+// Get list of students marked 'Present' on a specific date
+app.get('/api/attendance/present', (req, res) => {
+    const { date } = req.query;
+    if (!date) {
+        return res.status(400).json({ error: 'Missing date parameter' });
+    }
+
+    const query = `
+        SELECT s.* 
+        FROM students_table s
+        JOIN attendance a ON s.reg_no = a.student_reg_no
+        WHERE a.attendance_date = ? AND a.status = 'Present'
+    `;
+
+    db.query(query, [date], (err, results) => {
+        if (err) {
+            console.error('Error fetching present students:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+        res.json(results);
+    });
+});
+
