@@ -43,6 +43,7 @@ dist-ssr/
 server.js
 api/server.js
 api/tempCodeRunnerFile.js
+folder-structure.txt
 
 # ESLint config
 eslint.config.js
