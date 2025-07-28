@@ -19,10 +19,11 @@ node_modules/
 # Build output
 dist/
 dist-ssr/
+.vercel/output/
 
 # Environment files
 .env
-.env.*          # In case you have multiple env files
+.env.*          # For multiple env files (e.g., .env.production)
 
 # Editor and system files
 .vscode/
@@ -38,7 +39,10 @@ dist-ssr/
 # Temporary or local files
 *.local
 
-# Files you don't want on frontend hosting
-src/server.js
-src/tempCodeRunnerFile.js
+# Server or backend files you don’t want deployed to frontend
+server.js
+api/server.js
+api/tempCodeRunnerFile.js
+
+# ESLint config
 eslint.config.js
