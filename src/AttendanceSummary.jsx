@@ -40,8 +40,26 @@ function AttendanceSummary({ selectedDate }) {
 
     const COLORS = ['#4CAF50', '#F44336', '#808080']; // green, red, grey
 
+    // Custom label for Pie Chart to prevent clutter on small screens
+    const RADIAN = Math.PI / 180;
+    const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+        // Don't render label for very small slices to avoid overlap
+        if (percent < 0.05) {
+            return null;
+        }
+        const radius = innerRadius + (outerRadius - innerRadius) * 0.6;
+        const x = cx + radius * Math.cos(-midAngle * RADIAN);
+        const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+        return (
+            <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central">
+                {`${(percent * 100).toFixed(0)}%`}
+            </text>
+        );
+    };
+
     return (
-        <div id="summary" style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <div id="summary">
             <h4>Attendance summary on {selectedDate}</h4>
             {loading ? (
                 <p>Loading...</p>
@@ -51,16 +69,19 @@ function AttendanceSummary({ selectedDate }) {
                 <>
                     <p>Total Students: {summary.total}</p>
                     <div style={{ width: '100%', height: 300 }}>
-                        <ResponsiveContainer>
+                        <ResponsiveContainer >
                             <PieChart>
                                 <Pie
                                     data={data}
                                     cx="50%"
                                     cy="50%"
                                     labelLine={false}
-                                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                                    outerRadius={100}
+                                    label={renderCustomizedLabel}
+                                    outerRadius="85%"
+                                    innerRadius="50%"
                                     fill="#8884d8"
+                                    stroke="#fff"
+                                    strokeWidth={2}
                                     dataKey="value"
                                 >
                                     {data.map((entry, index) => (

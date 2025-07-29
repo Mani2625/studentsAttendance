@@ -6,6 +6,7 @@ function StudentsList() {
     const [students, setStudents] = useState([]);
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
     const [activeFilter, setActiveFilter] = useState('All'); // 'All', 'Present', 'Absent'
+    const [showSummary, setShowSummary] = useState(false);
 
     // Fetch all students initially or when filter changes
     useEffect(() => {
@@ -77,7 +78,13 @@ function StudentsList() {
                 </button>
             </div>
 
-            <AttendanceSummary selectedDate={selectedDate} />
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                <button onClick={() => setShowSummary(!showSummary)}>
+                    {showSummary ? 'Hide Summary' : 'Show Attendance Summary'}
+                </button>
+            </div>
+
+            {showSummary && <AttendanceSummary selectedDate={selectedDate} />}
 
             <div className="students-card">
                 {students.length === 0 ? (
