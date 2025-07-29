@@ -113,8 +113,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
 }
 
-/* NOTE: You have a duplicate 'button' selector rule from earlier. Consider merging them. */
-/* Default button style */
+
+b/* Default button style */
 button {
   padding: 8px 12px;
   margin: 5px;
@@ -146,8 +146,6 @@ button.marked.absent {
   border-radius: 8px;
   padding: 10px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  margin: 16px;
-  width: 50%;
   align-content: center;
   text-align: center;
   flex-wrap: wrap;
@@ -167,10 +165,6 @@ button.marked.absent {
   padding: 10px;
   border-radius: 8px;
   margin:  1%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
 }
 
 .navbar ul {
@@ -178,7 +172,8 @@ button.marked.absent {
   display: flex;
   gap: 20px;
   margin: 0;
-  padding: 0;
+  padding: 0; 
+  justify-content: center;
 }
 
 .navbar li {
@@ -188,80 +183,75 @@ button.marked.absent {
   text-decoration: none;
 }
 
-.menu-toggle {
-  display: none; /* Hidden on desktop */
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  margin: 0;
-  height: auto; /* Override global button styles */
-}
-
-.hamburger {
-  display: block;
-  width: 25px;
-  height: 3px;
-  background-color: white;
-  position: relative;
-  border-radius: 2px;
-  transition: background-color 0.3s ease;
-}
-
-.hamburger::before,
-.hamburger::after {
-  content: '';
-  position: absolute;
-  width: 25px;
-  height: 3px;
-  background-color: white;
-  border-radius: 2px;
-  transition: transform 0.3s ease;
-}
-
-.hamburger::before { top: -8px; }
-.hamburger::after { bottom: -8px; }
-
 .navbar a {
+  display: inline-block; /* Crucial for padding and other properties */
   text-decoration: none;
-  color: inherit;         /* Keep default text color */
+  color: inherit;
+  padding: 10px 15px;
+  border-radius: 8px;
+  border-bottom: 3px solid transparent; /* Prevents layout shift on active */
+  transition: background-color 0.2s ease-in-out;
+}
+
+.navbar a:hover:not(.active) {
+  background-color: #555; /* Hover effect for non-active items */
 }
 
 .navbar a.active {
-  font-weight: bold;     /* Highlight by making it bold */
-  border-bottom: 2px solid black; /* Or any subtle underline */
+  font-weight: bold;
   background-color: rgb(83, 78, 78);
-  padding: 10px;
-  border-radius: 8px;
+  border-bottom-color: black; /* Style for the active link */
+}
+
+.menu-icon {
+  display: none; /* Hidden on desktop */
+  background: none;
+  border: none;
+  color: white;
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0 10px;
 }
 
 /* Responsive Navbar for mobile */
 @media (max-width: 768px) {
-  .menu-toggle {
-    display: block; /* Show hamburger icon */
+  .navbar {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    position: relative; /* For positioning the menu */
+  }
+
+  .menu-icon {
+    display: block;
   }
 
   .navbar ul {
-    display: none; /* Hide menu by default */
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
+    display: none; /* Hide by default */
+    position: absolute;
+    top: 100%; /* Position below the navbar */
+    left: 0;
     width: 100%;
-    margin-top: 15px; /* Space between icon and menu items */
+    background-color: #3c3b3b;
+    flex-direction: column;
+    padding: 10px 0;
+    margin: 5px 0 0 0;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1000; /* Ensure menu is on top */
+    gap: 5px; /* Adjust gap for vertical layout */
   }
 
-  /* This class will be toggled with JavaScript to show the menu */
-  .navbar.open ul {
-    display: flex;
+  .navbar ul.open {
+    display: flex; /* Show the menu when open */
   }
 
-  /* Animate hamburger to an 'X' when open */
-  .navbar.open .hamburger { background-color: transparent; }
-  .navbar.open .hamburger::before { transform: rotate(45deg) translate(5px, 6px); }
-  .navbar.open .hamburger::after { transform: rotate(-45deg) translate(5px, -6px); }
+  .navbar a {
+    display: block; /* Make links full-width for easy tapping */
+    text-align: center;
+    border-bottom: none; /* Underline doesn't suit vertical layout */
+  }
 }
-
-
 
 .add-student {
   max-width: 400px;
